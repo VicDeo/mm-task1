@@ -1,0 +1,12 @@
+{
+    "name": "viktar/task1",
+    "description": "Reports",
+    "type": "project",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Task1\\": "src/"
+        }
+    },
+    "require": {}
+}
