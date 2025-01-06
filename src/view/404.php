@@ -12,7 +12,7 @@
             <div class="card-body">
             <h2 class="card-title">404</h2>
             <p class="card-text">We failed to find the page for '<?= request_uri() ?>'</p>
-            <a href="/" class="btn btn-primary">Go to the main page</a>
+            <a href="<?= link_to_route('root') ?>" class="btn btn-primary">Go to the main page</a>
         </div>
     </div>
 </body>
