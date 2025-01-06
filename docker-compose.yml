@@ -1,6 +1,9 @@
 services:
   app:
-    image: 'unit:php8.3'
+#    image: 'unit:php8.3'
+    build:
+      context: ./docker/unit
+      dockerfile: Dockerfile
     ports:
       - 8080:80
     volumes:
