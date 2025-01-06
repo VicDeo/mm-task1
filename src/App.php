@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Task1;
 
+use Task1\Model\Db;
 use Task1\Model\Http\Message\Uri;
 use Task1\Model\Http\Message\Body;
 use Task1\Model\Http\Message\Request;
@@ -18,6 +19,7 @@ class App
 
     private Router $router;
 
+    private Db $db;
 
     private function __construct(private string $baseDir)
     {
@@ -40,6 +42,11 @@ class App
     public function getConfig(): Config
     {
         return $this->config;
+    }
+
+    public function getDb(): Db
+    {
+        return $this->db;
     }
 
     public function getRequest(): RequestInterface
@@ -66,7 +73,7 @@ class App
 
     public function getRouter(): Router
     {
-        if (!isset($this->router)){
+        if (!isset($this->router)) {
             $this->router = new Router();
         }
         return $this->router;
@@ -75,6 +82,12 @@ class App
     public function run(): void
     {
         $this->config = new Config($this->baseDir);
+        $this->db = new Db(
+            $this->config->getValue('MYSQL_HOST'),
+            $this->config->getValue('MYSQL_DATABASE'),
+            $this->config->getValue('MYSQL_USER'),
+            $this->config->getValue('MYSQL_PASSWORD')
+        );
         $request = $this->getRequest();
         $this->getRouter()
             ->registerRoutes()
