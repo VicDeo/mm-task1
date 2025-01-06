@@ -12,10 +12,10 @@ class DatabaseController extends Controller
     public function create(): Template
     {
         try {
-            $this->getApp()->getDbTable('Client')->init();
-            $this->getApp()->getDbTable('Invoice')->init();
-            $this->getApp()->getDbTable('InvoiceItem')->init();
-            $this->getApp()->getDbTable('Payment')->init();
+            $this->getApp()->getDbTable('Client')->create();
+            $this->getApp()->getDbTable('Invoice')->create();
+            $this->getApp()->getDbTable('InvoiceItem')->create();
+            $this->getApp()->getDbTable('Payment')->create();
         } catch (\PDOException $e) {
             echo $e->getMessage();
         }
@@ -30,6 +30,10 @@ class DatabaseController extends Controller
             $this->getApp()->getDbTable('Invoice')->truncate();
             $this->getApp()->getDbTable('InvoiceItem')->truncate();
             $this->getApp()->getDbTable('Payment')->truncate();
+            $this->getApp()->getDbTable('Client')->seed();
+            $this->getApp()->getDbTable('Invoice')->seed();
+            $this->getApp()->getDbTable('InvoiceItem')->seed();
+            $this->getApp()->getDbTable('Payment')->seed();
         } catch (\PDOException $e) {
             echo $e->getMessage();
         }

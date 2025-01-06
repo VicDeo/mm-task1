@@ -19,4 +19,9 @@ class InvoiceItem extends Table
             KEY `INVOICE_ITEM_INVOICE_ID` (`invoice_id`)
         ) ENGINE=InnoDB;
     ";
+
+    protected const string SAMPLE_STATEMENT = "
+        INSERT INTO `invoice_item` (`invoice_id`, `product_title`, `qty`, `price`) VALUES
+        (1, 'Worek', 100, 0.5)
+    ;";
 }

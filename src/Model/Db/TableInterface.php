@@ -8,7 +8,9 @@ use PDO;
 
 interface TableInterface
 {
-    public function init(): void;
+    public function create(): void;
 
     public function truncate(): void;
+
+    public function seed(): void;
 }

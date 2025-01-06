@@ -40,12 +40,4 @@ abstract class Db
     {
         return "mysql:dbname={$this->database};host={$this->host};";
     }
-
-    protected function getTableName()
-    {
-        $classNameParts = explode('\\', static::class);
-        $className = array_pop($classNameParts);
-        $tableName = preg_replace('#([a-z])([A-Z])#', '${1}_${2}', $className);
-        return strtolower($tableName);
-    }
 }
