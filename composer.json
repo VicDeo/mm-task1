@@ -8,5 +8,7 @@
             "Task1\\": "src/"
         }
     },
-    "require": {}
+    "require": {
+        "psr/http-message": "^2.0"
+    }
 }
