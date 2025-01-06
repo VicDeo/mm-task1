@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Task1;
 
-use Task1\Model\Http\Message\Response\Template;
 use Task1\Model\Http\Message\Uri;
 use Task1\Model\Http\Message\Body;
 use Task1\Model\Http\Message\Request;
@@ -16,6 +15,9 @@ class App
     private Config $config;
 
     private Request $request;
+
+    private Router $router;
+
 
     private function __construct(private string $baseDir)
     {
@@ -62,17 +64,20 @@ class App
         return $this->request;
     }
 
+    public function getRouter(): Router
+    {
+        if (!isset($this->router)){
+            $this->router = new Router();
+        }
+        return $this->router;
+    }
+
     public function run(): void
     {
         $this->config = new Config($this->baseDir);
         $request = $this->getRequest();
-        $response = new Template(
-             $this->getBaseDir() . "/view/page.php"
-        );
-        $responseHeader = "HTTP/{$response->getProtocolVersion()} {$response->getStatusCode()} {$response->getReasonPhrase()}";
-        header(trim($responseHeader), true);
-
-        echo (string) eval ("?>" . $response->getBody());
-        print ($request->getUri()->getPath());
+        $this->getRouter()
+            ->registerRoutes()
+            ->dispatch($request);
     }
 }
