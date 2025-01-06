@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Task1;
 
+use Task1\Model\Http\Message\Response\Template;
 use Task1\Model\Http\Message\Uri;
 use Task1\Model\Http\Message\Body;
 use Task1\Model\Http\Message\Request;
@@ -65,6 +66,13 @@ class App
     {
         $this->config = new Config($this->baseDir);
         $request = $this->getRequest();
-        print($request->getUri()->getPath());
+        $response = new Template(
+             $this->getBaseDir() . "/view/page.php"
+        );
+        $responseHeader = "HTTP/{$response->getProtocolVersion()} {$response->getStatusCode()} {$response->getReasonPhrase()}";
+        header(trim($responseHeader), true);
+
+        echo (string) eval ("?>" . $response->getBody());
+        print ($request->getUri()->getPath());
     }
 }
