@@ -1,0 +1,28 @@
+services:
+  app:
+    image: 'unit:php8.3'
+    ports:
+      - 8080:80
+    volumes:
+      - .:/www
+      - ./docker/unit/config.json:/docker-entrypoint.d/config.json
+    networks:
+      - internal
+  
+  db:
+    image: mysql/mysql-server:8.0
+    env_file: src/.env
+    environment:
+      MYSQL_ROOT_HOST: '%'
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+    volumes:
+      - 'task1-mysql:/var/lib/mysql'
+    networks:
+      - internal
+
+networks:
+  internal:
+
+volumes:
+  task1-mysql:
+    driver: local
