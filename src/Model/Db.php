@@ -6,7 +6,7 @@ namespace Task1\Model;
 
 use PDO;
 
-class Db
+abstract class Db
 {
     private PDO $connection;
 
@@ -24,7 +24,7 @@ class Db
         return $statement;
     }
 
-    private function getConnection(): PDO
+    protected function getConnection(): PDO
     {
        if (!isset($this->connection)){
             $this->connection = new PDO(
@@ -36,8 +36,16 @@ class Db
        return $this->connection;
     }
 
-    private function getDsn(): string
+    protected function getDsn(): string
     {
         return "mysql:dbname={$this->database};host={$this->host};";
+    }
+
+    protected function getTableName()
+    {
+        $classNameParts = explode('\\', static::class);
+        $className = array_pop($classNameParts);
+        $tableName = preg_replace('#([a-z])([A-Z])#', '${1}_${2}', $className);
+        return strtolower($tableName);
     }
 }

@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Task1;
 
-use Task1\Model\Db;
+use Task1\Model\Db\TableInterface;
 use Task1\Model\Http\Message\Uri;
 use Task1\Model\Http\Message\Body;
 use Task1\Model\Http\Message\Request;
@@ -18,8 +18,6 @@ class App
     private Request $request;
 
     private Router $router;
-
-    private Db $db;
 
     private function __construct(private string $baseDir)
     {
@@ -44,9 +42,18 @@ class App
         return $this->config;
     }
 
-    public function getDb(): Db
+    public function getDbTable(string $modelName): TableInterface
     {
-        return $this->db;
+        $fullClassName = "Task1\\Model\\Db\\Table\\{$modelName}";
+        if (class_exists($fullClassName)){
+            return new $fullClassName(
+                $this->config->getValue('MYSQL_HOST'),
+                $this->config->getValue('MYSQL_DATABASE'),
+                $this->config->getValue('MYSQL_USER'),
+                $this->config->getValue('MYSQL_PASSWORD')
+            );
+        }
+        throw new \RuntimeException("Database model '$modelName' not found");
     }
 
     public function getRequest(): RequestInterface
@@ -82,12 +89,6 @@ class App
     public function run(): void
     {
         $this->config = new Config($this->baseDir);
-        $this->db = new Db(
-            $this->config->getValue('MYSQL_HOST'),
-            $this->config->getValue('MYSQL_DATABASE'),
-            $this->config->getValue('MYSQL_USER'),
-            $this->config->getValue('MYSQL_PASSWORD')
-        );
         $request = $this->getRequest();
         $this->getRouter()
             ->registerRoutes()
