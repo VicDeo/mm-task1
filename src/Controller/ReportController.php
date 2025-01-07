@@ -11,21 +11,35 @@ class ReportController extends Controller
     #[Route(method: 'GET', path: '/report/excess', name: 'report_excess')]
     public function excess(): Json
     {
-        $data = $this->getApp()->getReport('Excess')->getData();
-        return new Json($data);
+        return $this->processReport('Excess');
     }
 
     #[Route(method: 'GET', path: '/report/underpayment', name: 'report_underpayment')]
     public function underpayment(): Json
     {
-        $data = $this->getApp()->getReport('Underpayment')->getData();
-        return new Json($data);
+        return $this->processReport('Underpayment');
     }
 
     #[Route(method: 'GET', path: '/report/outstanding', name: 'report_outstanding')]
     public function outstanding(): Json
     {
-        $data = $this->getApp()->getReport('Outstanding')->getData();
-        return new Json($data);
+        return $this->processReport('Outstanding');
+    }
+
+    private function processReport(string $reportName): Json
+    {
+        try {
+            $responseData = [
+                'data' => $this->getApp()->getReport($reportName)->getData(),
+                'status' => 'success'
+            ];
+        } catch (\Exception $e) {
+            $responseData = [
+                'data' => [],
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ];
+        }
+        return new Json($responseData);
     }
 }

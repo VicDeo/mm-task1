@@ -4,27 +4,39 @@ declare(strict_types=1);
 namespace Task1\Controller;
 
 use Task1\Model\Attribute\Route;
-use Task1\Model\Http\Message\Response\Template;
+use Task1\Model\Http\Message\Response\Json;
 
 class DatabaseController extends Controller
 {
     #[Route(method: 'GET', path: '/db/create', name: 'db_create')]
-    public function create(): Template
+    public function create(): Json
     {
+        $responseData = [
+            'data' => [],
+            'status' => 'success'
+        ];
         try {
             $this->getApp()->getDbTable('Client')->create();
             $this->getApp()->getDbTable('Invoice')->create();
             $this->getApp()->getDbTable('InvoiceItem')->create();
             $this->getApp()->getDbTable('Payment')->create();
         } catch (\PDOException $e) {
-            echo $e->getMessage();
+            $responseData = [
+                'data' => [],
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ];
         }
-        return new Template('page.php');
+        return new Json($responseData);
     }
 
     #[Route(method: 'GET', path: '/db/seed', name: 'db_seed')]
-    public function seed(): Template
+    public function seed(): Json
     {
+        $responseData = [
+            'data' => [],
+            'status' => 'success'
+        ];
         try {
             $this->getApp()->getDbTable('Client')->truncate();
             $this->getApp()->getDbTable('Invoice')->truncate();
@@ -35,8 +47,12 @@ class DatabaseController extends Controller
             $this->getApp()->getDbTable('InvoiceItem')->seed();
             $this->getApp()->getDbTable('Payment')->seed();
         } catch (\PDOException $e) {
-            echo $e->getMessage();
-        }
-        return new Template('page.php');
+            $responseData = [
+                'data' => [],
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ];
+       }
+        return new Json($responseData);
     }
 }
