@@ -9,10 +9,26 @@ use Task1\Model\Db\Report;
 class Excess extends Report
 {
     protected const string REPORT_SQL = "
-        SELECT c.*, SUM(p.amount)-SUM(i.gross_amount) AS balance FROM invoice i 
-        LEFT JOIN client c ON i.client_id=c.id
-        LEFT JOIN payment p ON p.bank_account=c.bank_account
-        GROUP BY c.id
-        HAVING balance > 0;
+         SELECT t1.title, IFNULL(SUM(p.amount), 0)-t1.invoiced as balance 
+         FROM payment p
+         LEFT JOIN invoice i
+         ON p.invoice_id=i.id
+         LEFT JOIN
+         (
+            SELECT c.title, c.id as payer_id, IFNULL(SUM(i.gross_amount), 0) as invoiced
+            FROM invoice i
+            INNER JOIN client c 
+            ON c.id=i.client_id      
+            GROUP BY c.id
+        ) t1
+        ON i.client_id=t1.payer_id
+        GROUP BY i.client_id
+        HAVING balance>0;
     ";
+    
+ 
+    protected const array MAP = [
+        'title' => 'Nazwa przedsiębiorcy',
+        'balance' => 'Kwota nadpłaty' 
+    ];
 }

@@ -14,7 +14,7 @@ class Invoice extends Table
             `client_id` BIGINT,
             `created_at` DATE NOT NULL DEFAULT (CURRENT_DATE),
             `due_date`  DATE NOT NULL DEFAULT (CURRENT_DATE),
-            `gross_amount` DECIMAL(20,4) NOT NULL,
+            `gross_amount` DECIMAL(20,2) NOT NULL,
             PRIMARY KEY (`id`),
             KEY `INVOICE_CLIENT_ID` (`client_id`)
         ) ENGINE=InnoDB;
@@ -24,7 +24,7 @@ class Invoice extends Table
         INSERT INTO `invoice` (`client_id`, `created_at`, `due_date`, `gross_amount`) VALUES
         (1, '2024-01-01', '2024-01-15', 10000.01),
         (1, '2024-02-15', '2024-02-29', 521.34),
-        (1, '2024-03-01', '2024-03-15', 726.19),
+        (1, '2025-01-01', '2025-01-31', 726.19),
         (2, '2024-01-26', '2024-02-10', 47.11),
         (2, '2024-04-30', '2024-05-14', 21.04),
         (2, '2024-07-19', '2024-08-11', 76.93),

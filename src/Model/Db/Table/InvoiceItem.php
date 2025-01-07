@@ -14,7 +14,7 @@ class InvoiceItem extends Table
             `invoice_id` BIGINT NOT NULL,
             `product_title` VARCHAR(256) NOT NULL,
             `qty` INT NOT NULL,
-            `price` DECIMAL(20,4) NOT NULL,
+            `price` DECIMAL(20,2) NOT NULL,
             PRIMARY KEY (`id`),
             KEY `INVOICE_ITEM_INVOICE_ID` (`invoice_id`)
         ) ENGINE=InnoDB;

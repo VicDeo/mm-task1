@@ -12,6 +12,25 @@ abstract class Report extends Db implements ReportInterface
     {
         $s = $this->prepare(static::REPORT_SQL);
         $s->execute();
-        return $s->fetchAll();
+        $rawResult = $s->fetchAll(\PDO::FETCH_ASSOC);
+
+        return $this->mapResult($rawResult);
+    }
+
+    protected function mapResult(array $rawResult): array
+    {
+        $mapped = [];
+        $sourceKeys = array_keys(static::MAP);
+        foreach ($rawResult as $row){
+            $mappedRow = [];
+            foreach ($row as $oldKey => $value){
+                if (in_array($oldKey, $sourceKeys)){
+                    $newKey = static::MAP[$oldKey];
+                    $mappedRow[$newKey] = $value;
+                }
+            }
+            $mapped[] = $mappedRow;
+        }
+        return $mapped;
     }
 }
