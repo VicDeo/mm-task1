@@ -3,9 +3,10 @@ declare(strict_types=1);
 
 namespace Task1;
 
-use Task1\Model\Db\TableInterface;
 use Task1\Model\Http\Message\Uri;
+use Task1\Model\Db\TableInterface;
 use Task1\Model\Http\Message\Body;
+use Task1\Model\Db\ReportInterface;
 use Task1\Model\Http\Message\Request;
 use Psr\Http\Message\RequestInterface;
 
@@ -42,6 +43,7 @@ class App
         return $this->config;
     }
 
+    // TODO: Deduplicate code for getDbTable and getReport
     public function getDbTable(string $modelName): TableInterface
     {
         $fullClassName = "Task1\\Model\\Db\\Table\\{$modelName}";
@@ -54,6 +56,20 @@ class App
             );
         }
         throw new \RuntimeException("Database model '$modelName' not found");
+    }
+
+    public function getReport(string $modelName): ReportInterface
+    {
+        $fullClassName = "Task1\\Model\\Db\\Report\\{$modelName}";
+        if (class_exists($fullClassName)){
+            return new $fullClassName(
+                $this->config->getValue('MYSQL_HOST'),
+                $this->config->getValue('MYSQL_DATABASE'),
+                $this->config->getValue('MYSQL_USER'),
+                $this->config->getValue('MYSQL_PASSWORD')
+            );
+        }
+        throw new \RuntimeException("Report model '$modelName' not found");
     }
 
     public function getRequest(): RequestInterface

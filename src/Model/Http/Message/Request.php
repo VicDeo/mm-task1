@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Task1\Model\Http\Message;
 
-use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;

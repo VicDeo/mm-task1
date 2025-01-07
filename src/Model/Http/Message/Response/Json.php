@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Task1\Model\Http\Message\Response;
 
-use Task1\App;
 use Task1\Model\Http\Message\Body;
 use Psr\Http\Message\StreamInterface;
 use Task1\Model\Http\Message\Response;
