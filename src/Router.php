@@ -59,7 +59,7 @@ class Router
                 "The method {$requestMethod} and path {$path} are already registered"
             );
         }
-        if ($this->getPathByName($name) !== ''){
+        if ($this->getPathByName($name) !== '') {
             throw new \LogicException(
                 "Duplicated route name '{$name}' for {$requestMethod} and path {$path}"
             );
@@ -91,7 +91,12 @@ class Router
         if ($response instanceof ResponseInterface) {
             $responseHeader = "HTTP/{$response->getProtocolVersion()} {$response->getStatusCode()} {$response->getReasonPhrase()}";
             header(trim($responseHeader), true);
-
+            if ($response->hasHeader('Content-Type')) {
+                $contentType = $response->getHeaderLine('Content-Type');
+            } else {
+                $contentType = "text/html; charset=utf-8";
+            }
+            header("Content-Type: {$contentType}");
             echo (string) eval ("?>" . $response->getBody());
         } else {
             // Response is a string
