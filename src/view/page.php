@@ -15,7 +15,7 @@
             <button id="btn-next" type="button" class="btn btn-primary">Next</button>
         </div>
     </div>
-    <div id="report-data">
+    <div id="report-data" class="m-5">
     </div>
     <script>
         window.onload = function () {
