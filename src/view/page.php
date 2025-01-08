@@ -6,6 +6,15 @@
     <title>Task 1</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <style>
+        th {cursor: pointer}
+        th.sort-asc:before{
+            content:" \2193"
+        }
+        th.sort-desc:before{
+            content:" \2191"
+        }
+    </style>
 </head>
 <body class="m-5">
     <div class="m-auto card" style="width:40rem" tabindex="-1">
@@ -33,7 +42,6 @@
                 }
             }
 
-            let currentStep = 0;
             const steps = [
                 {
                     "title": "Step 1. Create tables",
@@ -60,6 +68,8 @@
                     "showReport": true
                 }
             ];
+
+            let currentStep = 0;
             document.getElementById("message-text").innerText = steps[currentStep]['title'];
 
             document.getElementById("btn-next").addEventListener("click", function (event) {
@@ -86,8 +96,11 @@
             function showReport(reportTitle, data){
                 const newTitle = document.createElement("h4");
                 newTitle.textContent = reportTitle;
+
                 const newTable = document.createElement("table");
-                newTable.classList.add("table")
+                newTable.classList.add("table");
+                newTable.classList.add("table-bordered");
+
                 const newHeading = document.createElement("tr");
                 for (columnName in data[0]){
                     const newColumn = document.createElement("th");
@@ -95,6 +108,7 @@
                     newHeading.appendChild(newColumn);
                 }
                 newTable.appendChild(newHeading);
+
                 for (row of data){
                     const newRow = document.createElement("tr");
                     for (columnName in row){
@@ -109,6 +123,30 @@
                 target.appendChild(newTitle);
                 target.appendChild(newTable);
             }
+
+            const divReport = document.getElementById("report-data");
+            divReport.addEventListener("click", (event) => {
+                const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent;
+                const comparer = (idx, asc) => (a, b) => ((v1, v2) => 
+                v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2)
+    )(getCellValue(asc ? a : b, idx), getCellValue(asc ? b : a, idx));
+
+            if (event.target.tagName === 'TH') {
+                const th = event.target;
+                const table = th.closest('table');
+
+                const className = th.classList.contains('sort-asc') ? 'sort-desc' : 'sort-asc';
+                for (const el of th.parentNode.children){
+                    el.classList.remove('sort-asc'); 
+                    el.classList.remove('sort-desc');
+                };
+                th.classList.add(className);
+
+                Array.from(table.querySelectorAll('tr:nth-child(n+2)'))
+                    .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
+                    .forEach(tr => table.appendChild(tr));
+            }
+            });
         }
     </script>
 </body>
