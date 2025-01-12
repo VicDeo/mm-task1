@@ -23,7 +23,9 @@ class Router
 
                 foreach ($attributes as $attribute) {
                     $route = $attribute->newInstance();
-                    $this->register($route->method, $route->path, [$controller, $method->getName()], $route->name);
+                    $route->controllerClass = $controller;
+                    $route->action = $method->getName();
+                    $this->register($route);
                 }
             }
         }
@@ -47,47 +49,57 @@ class Router
         return $controllers;
     }
 
-    private function routeExists(string $requestMethod, string $path): bool
+    private function routeExists(Route $route): bool
     {
-        return isset($this->routes[$requestMethod][$path]);
+        return isset($this->routes[$route->method][$route->path]);
     }
 
-    private function register(string $requestMethod, string $path, array $action, string $name): self
+    private function register(route $route): self
     {
-        if ($this->routeExists($requestMethod, $path)) {
+        if ($this->routeExists($route)) {
             throw new \LogicException(
-                "The method {$requestMethod} and path {$path} are already registered"
-            );
-        }
-        if ($this->getPathByName($name) !== '') {
-            throw new \LogicException(
-                "Duplicated route name '{$name}' for {$requestMethod} and path {$path}"
+                "The method {$route->method} and path {$route->path} are already registered"
             );
         }
 
-        $this->routes[$requestMethod][$path] = [
-            'action' => $action,
-            'name' => $name
-        ];
+        if ($this->getPathByName($route->name) !== '') {
+            throw new \LogicException(
+                "Duplicated route name '{$route->name}' for {$route->method} and path {$route->path}"
+            );
+        }
+
+        $this->routes[$route->method][$route->path] = $route;
+
         return $this;
     }
 
     public function dispatch(Request $request): void
     {
-        $path = preg_replace('#/index.php#', '', $request->getUri()->getPath());
+        $path = preg_replace('#^/index.php#', '', $request->getUri()->getPath());
         $path = $path !== '' ? $path : '/';
 
+        // Remove query string form path
+        $query = $request->getUri()->getQuery();
+        if ($query !== '') {
+            $escapedQuery = preg_quote("?$query", '#');
+            $path = preg_replace("#$escapedQuery$#", '', $path);
+        }
+
         $requestMethod = $request->getMethod();
-        if ($this->routeExists($requestMethod, $path)) {
-            $class = $this->routes[$requestMethod][$path]['action'][0];
-            $method = $this->routes[$requestMethod][$path]['action'][1];
-        } else {
-            $class = NotFoundController::class;
-            $method = 'index';
+
+        $dispatchedRoute = new Route(
+            $requestMethod,
+            $path,
+            '',
+            NotFoundController::class,
+            'index'
+        );
+        if ($this->routeExists($dispatchedRoute)) {
+            $dispatchedRoute = $this->routes[$requestMethod][$path];
         }
 
         ob_start();
-        $response = (new $class())->$method();
+        $response = $dispatchedRoute->getResponse();
         if ($response instanceof ResponseInterface) {
             $responseHeader = "HTTP/{$response->getProtocolVersion()} {$response->getStatusCode()} {$response->getReasonPhrase()}";
             header(trim($responseHeader), true);
@@ -108,9 +120,9 @@ class Router
     public function getPathByName(string $name): string
     {
         foreach ($this->routes as $routePart) {
-            foreach ($routePart as $routePath => $routeData) {
-                if ($name === $routeData['name']) {
-                    return $routePath;
+            foreach ($routePart as $route) {
+                if ($name === $route->name) {
+                    return $route->path;
                 }
             }
         }

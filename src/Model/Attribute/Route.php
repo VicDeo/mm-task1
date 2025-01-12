@@ -11,7 +11,16 @@ class Route
     public function __construct(
         public string $method,
         public string $path,
-        public string $name
+        public string $name = '',
+        public string $controllerClass = '',
+        public string $action = ''
     ) {
     }
+
+    public function getResponse(): mixed
+    {
+        $method = $this->action;
+        return (new $this->controllerClass())->$method();
+    }
+
 }
