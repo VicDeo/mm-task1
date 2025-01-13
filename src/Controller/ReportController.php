@@ -45,7 +45,7 @@ class ReportController extends Controller
 
             $sortBy = $this->getUrlParam('sort_by', '');
             if ($sortBy !== '') {
-                $sortDir = $this->getUrlParam('sort_dir', ReportInterface::SORT_ORDER_DESC);
+                $sortDir = $this->getUrlParam('sort_dir', ReportInterface::SORT_ORDER_ASC);
                 $report->setSortOrder($sortBy, $sortDir);
             }
 

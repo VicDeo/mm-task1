@@ -82,26 +82,38 @@
                 {
                     "title": "Raport Nadpłaty / Excess Payments report",
                     "action": "<?= link_to_route('report_excess') ?>",
-                    "sort_by": {}
+                    "sort_by": {},
+                    "filter_by" : {}
                 },
                 {
                     "title": "Raport Niedopłaty / Underpayment Report",
                     "action": "<?= link_to_route('report_underpayment') ?>",
-                    "sort_by": {}
+                    "sort_by": {},
+                    "filter_by" : {}
                 },
                 {
                     "title": "Raport Nierozliczone faktury po terminie płatnośći / Report Outstanding invoices after payment due date",
                     "action": "<?= link_to_route('report_outstanding') ?>",
-                    "sort_by": {}
+                    "sort_by": {},
+                    "filter_by": {}
                 }
             ];
 
+            document.getElementsByTagName("body")[0].addEventListener("keyup", function (event) {
+                if (event.key === "Enter"
+                    && event.target.dataset.filter
+                    && event.target.dataset.step
+                ){
+                    const reportId = event.target.dataset.step;
+                    steps[reportId]['filter_by'][event.target.dataset.filter] = event.target.value;
+                    document.getElementsByClassName("nav-link")[reportId].click();
+                }
+            });
             document.getElementsByTagName("body")[0].addEventListener("click", function (event) {
-                event.target.setAttribute('disabled', 'disabled');
-
                 if (event.target.classList.contains("nav-link")
                     && typeof event.target.dataset.step === 'string'
                 ) {
+                    event.target.setAttribute('disabled', 'disabled');
                     const currentStep = parseInt(event.target.dataset.step);
                     const onResponse = function(json){
                         console.log(json);
@@ -117,6 +129,12 @@
                         url.searchParams.set("sort_by", i);
                         url.searchParams.set("sort_dir", steps[currentStep]["sort_by"][i]);
                     }
+                    let filterCount = 0;
+                    for (let i in steps[currentStep]["filter_by"]){
+                        filterCount++;
+                        url.searchParams.set("filter_"+filterCount, i);
+                        url.searchParams.set("filter_value_"+filterCount, steps[currentStep]["filter_by"][i]);
+                    }
 
                     getData(url, onResponse);
                 }
@@ -131,13 +149,35 @@
                 newTable.classList.add("table-bordered");
                 newTable.dataset.step = metadata["id"];
 
+                const thead = document.createElement("thead");
                 const newHeading = document.createElement("tr");
                 for (columnName in data[0]){
                     const newColumn = document.createElement("th");
                     newColumn.textContent = columnName;
+                    if (typeof metadata["sort_by"][columnName] !== 'undefined') {
+                        const className = metadata["sort_by"][columnName] === 'DESC' ? 'sort-desc' : 'sort-asc';
+                        newColumn.classList.add(className);
+                    }
                     newHeading.appendChild(newColumn);
                 }
-                newTable.appendChild(newHeading);
+                thead.appendChild(newHeading);
+                newTable.appendChild(thead);
+
+                const tbody = document.createElement("tbody");
+                const filterRow = document.createElement("tr");
+                for (columnName in data[0]){
+                    const newColumn = document.createElement("td");
+                    const input = document.createElement("input");
+                    input.dataset.filter = columnName;
+                    input.dataset.step = metadata['id'];
+                    if (typeof metadata['filter_by'][columnName] !== 'undefined'){
+                        input.value = metadata['filter_by'][columnName];
+                    }
+                    newColumn.appendChild(input);
+                    filterRow.appendChild(newColumn);
+                }
+                tbody.append(filterRow);
+                newTable.append(tbody);
 
                 for (row of data){
                     const newRow = document.createElement("tr");
@@ -146,7 +186,7 @@
                         newColumn.textContent = row[columnName];
                         newRow.appendChild(newColumn);
                     }
-                    newTable.appendChild(newRow);
+                    tbody.appendChild(newRow);
                 }
 
                 const target = document.getElementById('report-data');
