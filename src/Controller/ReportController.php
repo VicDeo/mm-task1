@@ -32,6 +32,13 @@ class ReportController extends Controller
         try {
             $report = $this->getApp()->getReport($reportName);
             $filters = [];
+            $fc = 1;
+            while (($filterName = $this->getUrlParam("filter_{$fc}", false)) !== false) {
+                $filterValue = $this->getUrlParam("filter_value_{$fc}", '');
+                $filters[$filterName] = $filterValue;
+                $fc++;
+            }
+
             if (count($filters) > 0) {
                 $report->setFilters($filters);
             }

@@ -8,6 +8,10 @@ use Task1\Model\Db\Report;
 
 class Excess extends Report
 {
+    protected array $having = [
+        "balance>0"
+    ];
+
     protected const string REPORT_SQL = "
          SELECT t1.title, IFNULL(SUM(p.amount), 0)-t1.invoiced as balance 
          FROM payment p

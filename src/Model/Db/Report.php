@@ -10,10 +10,20 @@ use Task1\Model\Db\ReportInterface;
 abstract class Report extends Db implements ReportInterface
 {
     protected array $filters = [];
+
+    protected array $queryValues = [];
+
     protected array $sortBy = [];
+
+    protected array $having = [];
 
     public function setFilters(array $filters): ReportInterface
     {
+        $reverseMap = array_flip(static::MAP);
+        foreach ($filters as $translatedField => $value) {
+            $filterByField = $reverseMap[$translatedField];
+            $this->filters[$filterByField] = $value;
+        }
         return $this;
     }
 
@@ -28,6 +38,17 @@ abstract class Report extends Db implements ReportInterface
     public function getData(): array
     {
         $reportSql = static::REPORT_SQL;
+
+        foreach ($this->filters as $k => $v) {
+            $this->having[] = "{$k} LIKE :{$k}";
+            $this->queryValues[":{$k}"] = "%{$v}%";
+        }
+
+        if (count($this->having) > 0) {
+            $h = implode(' AND ', $this->having);
+            $reportSql .= "HAVING $h";
+        }
+
         $sortBy = array_keys($this->sortBy);
         if (count($sortBy) > 0) {
             $sortField = $sortBy[0];
@@ -35,7 +56,7 @@ abstract class Report extends Db implements ReportInterface
         }
 
         $s = $this->prepare($reportSql);
-        $s->execute();
+        $s->execute($this->queryValues);
         $rawResult = $s->fetchAll(\PDO::FETCH_ASSOC);
 
         return $this->mapResult($rawResult);

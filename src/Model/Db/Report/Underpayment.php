@@ -8,6 +8,10 @@ use Task1\Model\Db\Report;
 
 class Underpayment extends Report
 {
+    protected array $having = [
+        "underpayment_amount>0"
+    ];
+
     protected const string REPORT_SQL = "
         SELECT c.title, i.id, i.created_at, i.gross_amount, i.gross_amount-t1.total_paid as underpayment_amount
         FROM invoice i 
@@ -17,8 +21,7 @@ class Underpayment extends Report
             FROM payment p
             GROUP BY invoice_id
         ) t1
-        ON i.id=t1.invoice_id 
-        HAVING underpayment_amount>0
+        ON i.id=t1.invoice_id
     ";
 
     protected const array MAP = [

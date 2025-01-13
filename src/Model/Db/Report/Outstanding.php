@@ -8,6 +8,9 @@ use Task1\Model\Db\Report;
 
 class Outstanding extends Report
 {
+    protected array $having = [
+        "outstanding_amount>0"
+    ];
     protected const string REPORT_SQL = "
         SELECT c.title, i.id, i. created_at, i.due_date, i.gross_amount, i.gross_amount-IFNULL(SUM(p.amount), 0) as outstanding_amount
         FROM invoice i
@@ -17,7 +20,6 @@ class Outstanding extends Report
         ON c.id = i.client_id
         WHERE i.due_date < (CURRENT_DATE)
         GROUP BY i.id
-        HAVING outstanding_amount>0
     ";
 
     protected const array MAP = [
