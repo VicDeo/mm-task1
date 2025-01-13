@@ -16,14 +16,29 @@
         }
     </style>
 </head>
-<body class="m-5">
-    <div class="m-auto card" style="width:40rem" tabindex="-1">
-        <div class="card-body">
-            <h5 class="card-title">Task 1</h5>
-            <p id="message-text" class="card-text"></p>
-            <button id="btn-next" type="button" class="btn btn-primary">Next</button>
+<body>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Task 1</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+            <a class="nav-link disabled" data-step="0" href="#">Raport Nadpłaty / Excess Payments</a>
+            <a class="nav-link disabled" data-step="1" href="#">Raport Niedopłaty / Underpayment</a>
+            <a class="nav-link disabled" data-step="2" href="#">Raport Nierozliczone faktury po terminie płatnośći / Outstanding invoices after payment due date</a>
+        </div>
         </div>
     </div>
+    </nav>
+
+    <div class="spinner-wrapper position-absolute w-100 h-100 d-flex flex-column align-items-center bg-white justify-content-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
     <div id="report-data" class="m-5">
     </div>
     <script>
@@ -42,64 +57,79 @@
                 }
             }
 
+            const showSpinner = (state) => {
+                const spinner = document.getElementsByClassName("spinner-wrapper")[0];
+                spinner.style.display = state ? 'flex' : 'none';
+                if (state){
+                    spinner.classList.add("d-flex");
+                } else {
+                    spinner.classList.remove("d-flex");
+                }
+            }
+
+            fetch("<?= link_to_route('db_create') ?>")
+            .then(() => {
+                return fetch("<?= link_to_route('db_seed') ?>");
+            })
+            .then(() => {
+                showSpinner(false);
+                for (const link of document.getElementsByClassName("nav-link")){
+                    link.classList.remove("disabled");
+                }
+            });
+
             const steps = [
                 {
-                    "title": "Step 1. Create tables",
-                    "action": "<?= link_to_route('db_create') ?>"
-                },
-                {
-                    "title": "Step 2. Seed database",
-                    "action": "<?= link_to_route('db_seed') ?>",
-                    "showReport": false
-                },
-                {
-                    "title": "Step 3. Raport Nadpłaty / Excess Payments report",
+                    "title": "Raport Nadpłaty / Excess Payments report",
                     "action": "<?= link_to_route('report_excess') ?>",
-                    "showReport": true
+                    "sort_by": {}
                 },
                 {
-                    "title": "Step 4. Raport Niedopłaty / Underpayment Report",
+                    "title": "Raport Niedopłaty / Underpayment Report",
                     "action": "<?= link_to_route('report_underpayment') ?>",
-                    "showReport": true
+                    "sort_by": {}
                 },
                 {
-                    "title": "Step 5. Raport Nierozliczone faktury po terminie płatnośći / Report Outstanding invoices after payment due date",
+                    "title": "Raport Nierozliczone faktury po terminie płatnośći / Report Outstanding invoices after payment due date",
                     "action": "<?= link_to_route('report_outstanding') ?>",
-                    "showReport": true
+                    "sort_by": {}
                 }
             ];
 
-            let currentStep = 0;
-            document.getElementById("message-text").innerText = steps[currentStep]['title'];
-
-            document.getElementById("btn-next").addEventListener("click", function (event) {
+            document.getElementsByTagName("body")[0].addEventListener("click", function (event) {
                 event.target.setAttribute('disabled', 'disabled');
-                const onResponse = function(btn){
-                    return function(json){
-                        const hasReport = steps[currentStep]['showReport'];
-                        currentStep++;
-                        if (currentStep < steps.length){
-                            document.getElementById("message-text").innerText = steps[currentStep]['title'];
-                            btn.removeAttribute('disabled');
-                        } else {
-                            btn.style.display = 'none';
-                        }
+
+                if (event.target.classList.contains("nav-link")
+                    && typeof event.target.dataset.step === 'string'
+                ) {
+                    const currentStep = parseInt(event.target.dataset.step);
+                    const onResponse = function(json){
                         console.log(json);
-                        if (hasReport){
-                            showReport(steps[currentStep-1]['title'], json.data);
-                        } 
+                        const metadata = steps[currentStep];
+                        metadata['id'] = currentStep;
+                        showReport(metadata, json.data);
+                        showSpinner(false);
                     }
-                }(event.target);
-                getData(steps[currentStep]['action'], onResponse);
+                    showSpinner(true);
+                    console.log(steps[currentStep]);
+                    const url = new URL(steps[currentStep]['action']);
+                    for (let i in steps[currentStep]["sort_by"]){
+                        url.searchParams.set("sort_by", i);
+                        url.searchParams.set("sort_dir", steps[currentStep]["sort_by"][i]);
+                    }
+
+                    getData(url, onResponse);
+                }
             });
 
-            function showReport(reportTitle, data){
+            function showReport(metadata, data){
                 const newTitle = document.createElement("h4");
-                newTitle.textContent = reportTitle;
+                newTitle.textContent = metadata['title'];
 
                 const newTable = document.createElement("table");
                 newTable.classList.add("table");
                 newTable.classList.add("table-bordered");
+                newTable.dataset.step = metadata["id"];
 
                 const newHeading = document.createElement("tr");
                 for (columnName in data[0]){
@@ -120,6 +150,7 @@
                 }
 
                 const target = document.getElementById('report-data');
+                target.innerHTML = '';
                 target.appendChild(newTitle);
                 target.appendChild(newTable);
             }
@@ -134,6 +165,14 @@
             if (event.target.tagName === 'TH') {
                 const th = event.target;
                 const table = th.closest('table');
+                const reportId = table.dataset.step;
+                const field = th.textContent;
+                if (steps[reportId]['sort_by'][field] === 'ASC') {
+                    steps[reportId]['sort_by'][field] = 'DESC';
+                } else {
+                    steps[reportId]['sort_by'] = {};
+                    steps[reportId]['sort_by'][field] = 'ASC';
+                }
 
                 const className = th.classList.contains('sort-asc') ? 'sort-desc' : 'sort-asc';
                 for (const el of th.parentNode.children){
@@ -141,10 +180,14 @@
                     el.classList.remove('sort-desc');
                 };
                 th.classList.add(className);
+                document.getElementsByClassName("nav-link")[reportId].click();
 
+                /*
+                const table = th.closest('table');
                 Array.from(table.querySelectorAll('tr:nth-child(n+2)'))
                     .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
                     .forEach(tr => table.appendChild(tr));
+                */
             }
             });
         }

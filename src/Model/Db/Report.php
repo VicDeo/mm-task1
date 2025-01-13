@@ -19,10 +19,9 @@ abstract class Report extends Db implements ReportInterface
 
     public function setSortOrder(string $translatedField, string $direction): ReportInterface
     {
-        $reverseMap = array_flip(self::MAP);
+        $reverseMap = array_flip(static::MAP);
         $sortByField = $reverseMap[$translatedField];
         $this->sortBy[$sortByField] = $direction;
-
         return $this;
     }
 

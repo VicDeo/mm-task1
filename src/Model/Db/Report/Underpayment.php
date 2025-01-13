@@ -18,7 +18,7 @@ class Underpayment extends Report
             GROUP BY invoice_id
         ) t1
         ON i.id=t1.invoice_id 
-        HAVING underpayment_amount>0;
+        HAVING underpayment_amount>0
     ";
 
     protected const array MAP = [
