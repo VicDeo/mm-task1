@@ -27,7 +27,6 @@ class Excess extends Report
         ) t1
         ON i.client_id=t1.payer_id
         GROUP BY i.client_id
-        HAVING balance>0
     ";
     
  
