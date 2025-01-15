@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace Task1\Controller;
 
 use Task1\Model\Attribute\Route;
-use Task1\Model\Db\ReportInterface;
 use Task1\Model\Http\Message\Response\Json;
 
 class ReportController extends Controller
@@ -31,15 +30,9 @@ class ReportController extends Controller
     {
         try {
             $report = $this->getApp()->getReport($reportName);
-            $filters = [];
-            $fc = 1;
-            while (($filterName = $this->getUrlParam("filter_{$fc}", false)) !== false) {
-                $filterValue = $this->getUrlParam("filter_value_{$fc}", '');
-                $filters[$filterName] = $filterValue;
-                $fc++;
-            }
-
-            if (count($filters) > 0) {
+            $filterParam = $this->getUrlParam('filters', '');
+            if ($filterParam !== '') {
+                $filters = json_decode(rawurldecode($filterParam), true);
                 $report->setFilters($filters);
             }
 

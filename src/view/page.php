@@ -104,12 +104,10 @@ th.sort-desc:before {
                         url.searchParams.set("sorter", encodeURIComponent(JSON.stringify(this.sorter)));
                     }
 
-                    let filterCount = 0;
-                    for (let i in this.filters) {
-                        filterCount++;
-                        url.searchParams.set("filter_" + filterCount, i);
-                        url.searchParams.set("filter_value_" + filterCount, this.filters[i]);
+                    if (Object.keys(this.filters).length > 0) {
+                        url.searchParams.set("filters", encodeURIComponent(JSON.stringify(this.filters)));
                     }
+
                     let result = await fetch(url);
                     this.data = await result.json();
                     this.render();
