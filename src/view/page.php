@@ -56,8 +56,15 @@
 
                     if (!this.src) return;
 
-                    this.sorter = {field: '', direction: ''};
+                    this.sorter = { field: '', direction: '' };
                     this.filters = {};
+                    this.filterTypes = [
+                        { name: "none" },
+                        { name: "contains" },
+                        { name: "equals" },
+                        { name: "less" },
+                        { name: "greater" },
+                    ]
 
                     this.onToggleDirection = this.onToggleDirection.bind(this);
                     this.onApplyFilter = this.onApplyFilter.bind(this);
@@ -132,10 +139,21 @@ th.sort-desc:before {
 
                 onApplyFilter(evt) {
                     if (evt.key === "Enter"
-                        && evt.target.dataset.filter) {
-                        this.filters[evt.target.dataset.filter] = evt.target.value;
+                        && evt.target.dataset.filter
+                    ) {
+                        const parent = evt.target.closest('td');
+                        const type = parent.querySelector('select').value;
+                        this.filters[evt.target.dataset.filter] = {
+                            value: evt.target.value,
+                            type: type
+                        }
+
                         this.load();
                     }
+                }
+
+                filterIsApplied(field) {
+                    return typeof this.filters[field] !== 'undefined';
                 }
 
                 render() {
@@ -174,11 +192,23 @@ th.sort-desc:before {
                         newColumn.classList.add('filterable');
                         const input = document.createElement("input");
                         input.dataset.filter = columnName;
-                        if (typeof this.filters[columnName] !== 'undefined') {
-                            input.value = this.filters[columnName];
+                        if (this.filterIsApplied(columnName)) {
+                            input.value = this.filters[columnName]['value'];
                         }
-
                         newColumn.appendChild(input);
+
+                        const dropdown = document.createElement('select');
+                        for (const filterType of this.filterTypes) {
+                            const option = document.createElement('option');
+                            option.setAttribute("value", filterType.name);
+                            option.innerHTML = filterType.name;
+                            if (this.filterIsApplied(columnName) && this.filters[columnName]['type'] === filterType.name) {
+                                option.setAttribute('selected', 'selected');
+                            }
+                            dropdown.appendChild(option);
+                        }
+                        newColumn.appendChild(dropdown);
+
                         filterRow.appendChild(newColumn);
                     }
                     thead.append(filterRow);

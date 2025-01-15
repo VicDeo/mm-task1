@@ -11,6 +11,10 @@ abstract class Report extends Db implements ReportInterface
 {
     protected array $filters = [];
 
+    protected array $allowedFilterTypes = [
+        'contains', 'equals', 'less', 'greater'
+    ];
+
     protected array $queryValues = [];
 
     protected array $sortBy = [];
@@ -20,9 +24,16 @@ abstract class Report extends Db implements ReportInterface
     public function setFilters(array $filters): ReportInterface
     {
         $reverseMap = array_flip(static::MAP);
-        foreach ($filters as $translatedField => $value) {
+        foreach ($filters as $translatedField => $details) {
+            $filterType = $details['type'];
+            if (in_array($filterType, $this->allowedFilterTypes) === false){
+                continue;
+            }
             $filterByField = $reverseMap[$translatedField];
-            $this->filters[$filterByField] = $value;
+            $this->filters[$filterByField] = [
+                'value' => $details['value'],
+                'type' => $filterType
+            ];
         }
         return $this;
     }
@@ -39,9 +50,22 @@ abstract class Report extends Db implements ReportInterface
     {
         $reportSql = static::REPORT_SQL;
 
-        foreach ($this->filters as $k => $v) {
-            $this->having[] = "{$k} LIKE :{$k}";
-            $this->queryValues[":{$k}"] = "%{$v}%";
+        foreach ($this->filters as $field => $details) {
+            $value = $details['value'];
+            // I know, this is ugly ;)
+            if ($details['type'] === 'contains') {
+                $this->having[] = "{$field} LIKE :{$field}";
+                $this->queryValues[":{$field}"] = "%{$value}%";
+            } elseif ($details['type'] === 'equals') {
+                $this->having[] = "{$field} = :{$field}";
+                $this->queryValues[":{$field}"] = "{$value}";
+            } elseif ($details['type'] === 'less') {
+                $this->having[] = "{$field} < :{$field}";
+                $this->queryValues[":{$field}"] = "{$value}";
+            } elseif ($details['type'] === 'greater') {
+                $this->having[] = "{$field} > :{$field}";
+                $this->queryValues[":{$field}"] = "{$value}";
+            }
         }
 
         if (count($this->having) > 0) {

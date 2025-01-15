@@ -9,6 +9,7 @@ interface ReportInterface
     public const string SORT_ORDER_ASC = 'ASC';
     public const string SORT_ORDER_DESC = 'DESC';
 
+
     public function getData(): array;
 
     public function setFilters(array $filters): ReportInterface;
