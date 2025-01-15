@@ -145,7 +145,6 @@ th.sort-desc:before {
                 }
 
                 render() {
-                    console.log(this.data);
                     this.renderHeader();
                     this.renderBody();
                 }
@@ -161,7 +160,7 @@ th.sort-desc:before {
                     }
 
                     const newHeading = document.createElement("tr");
-                    for (const columnName in this.data.data[0]) {
+                    for (const columnName of this.data.data.head) {
                         const newColumn = document.createElement("th");
                         newColumn.textContent = columnName;
                         newColumn.classList.add('sortable');
@@ -176,7 +175,7 @@ th.sort-desc:before {
                     thead.appendChild(newHeading);
 
                     const filterRow = document.createElement("tr");
-                    for (const columnName in this.data.data[0]) {
+                    for (const columnName of this.data.data.head) {
                         const newColumn = document.createElement("td");
                         newColumn.classList.add('filterable');
                         const input = document.createElement("input");
@@ -202,7 +201,7 @@ th.sort-desc:before {
                 renderBody() {
                     const tbody = this.shadowRoot.querySelector('tbody');
                     tbody.innerHTML = '';
-                    for (const row of this.data.data) {
+                    for (const row of this.data.data.body) {
                         const newRow = document.createElement("tr");
                         for (const columnName in row) {
                             const newColumn = document.createElement("td");
@@ -238,6 +237,11 @@ th.sort-desc:before {
                 if (event.target.classList.contains("nav-link")
                     && typeof event.target.dataset.url === 'string'
                 ) {
+                    document.querySelectorAll('.nav-link').forEach(a => {
+                        a.classList.remove('active');
+                    });
+                    event.target.classList.add('active');
+
                     const target = document.getElementById('report-data');
                     target.innerHTML = `<report-table src="${event.target.dataset.url}" title="${event.target.getAttribute('title')}">`
                 }

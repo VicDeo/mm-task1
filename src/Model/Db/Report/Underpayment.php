@@ -13,7 +13,7 @@ class Underpayment extends Report
     ];
 
     protected const string REPORT_SQL = "
-        SELECT c.title, i.id, i.created_at, i.gross_amount, i.gross_amount-t1.total_paid as underpayment_amount
+        SELECT c.title, i.id, i.created_at, i.due_date, i.gross_amount, i.gross_amount-t1.total_paid as underpayment_amount
         FROM invoice i 
         LEFT JOIN client c ON i.client_id=c.id
         LEFT JOIN (

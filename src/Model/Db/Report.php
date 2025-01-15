@@ -59,7 +59,10 @@ abstract class Report extends Db implements ReportInterface
         $s->execute($this->queryValues);
         $rawResult = $s->fetchAll(\PDO::FETCH_ASSOC);
 
-        return $this->mapResult($rawResult);
+        return [
+            'head' => array_values(static::MAP),
+            'body' => $this->mapResult($rawResult)
+        ];
     }
 
     protected function mapResult(array $rawResult): array
