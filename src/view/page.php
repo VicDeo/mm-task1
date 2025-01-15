@@ -56,8 +56,7 @@
 
                     if (!this.src) return;
 
-                    this.sortField = this.hasAttribute('sortField') ? this.getAttribute('sortField') : '';
-                    this.sortDirection = this.hasAttribute('sortDirection') ? this.getAttribute('sortDirection') : '';
+                    this.sorter = {field: '', direction: ''};
                     this.filters = {};
 
                     this.onToggleDirection = this.onToggleDirection.bind(this);
@@ -101,8 +100,9 @@ th.sort-desc:before {
                 async load() {
                     showSpinner(true);
                     const url = new URL(this.src);
-                    url.searchParams.set("sort_by", this.sortField);
-                    url.searchParams.set("sort_dir", this.sortDirection);
+                    if (this.sorter.field !== '') {
+                        url.searchParams.set("sorter", encodeURIComponent(JSON.stringify(this.sorter)));
+                    }
 
                     let filterCount = 0;
                     for (let i in this.filters) {
@@ -123,15 +123,11 @@ th.sort-desc:before {
                 }
 
                 onToggleDirection(evt) {
-                    if (evt.target.innerText === this.sortField) {
-                        if (this.sortDirection === 'ASC') {
-                            this.sortDirection = 'DESC'
-                        } else {
-                            this.sortDirection = 'ASC'
-                        }
+                    if (evt.target.innerText === this.sorter.field) {
+                        this.sorter.direction = this.sorter.direction === 'ASC' ? 'DESC' : 'ASC';
                     } else {
-                        this.sortField = evt.target.innerText
-                        this.sortDirection = 'ASC'
+                        this.sorter.field = evt.target.innerText;
+                        this.sorter.direction = 'ASC';
                     }
                     this.load();
                 }
@@ -164,8 +160,8 @@ th.sort-desc:before {
                         const newColumn = document.createElement("th");
                         newColumn.textContent = columnName;
                         newColumn.classList.add('sortable');
-                        if (columnName === this.sortField) {
-                            const className = this.sortDirection === 'DESC' ? 'sort-desc' : 'sort-asc';
+                        if (columnName === this.sorter.field) {
+                            const className = this.sorter.direction === 'DESC' ? 'sort-desc' : 'sort-asc';
                             newColumn.classList.add(className);
                         }
                         newHeading.appendChild(newColumn);

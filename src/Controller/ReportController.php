@@ -43,10 +43,10 @@ class ReportController extends Controller
                 $report->setFilters($filters);
             }
 
-            $sortBy = $this->getUrlParam('sort_by', '');
-            if ($sortBy !== '') {
-                $sortDir = $this->getUrlParam('sort_dir', ReportInterface::SORT_ORDER_ASC);
-                $report->setSortOrder($sortBy, $sortDir);
+            $sorterParam = $this->getUrlParam('sorter', '');
+            if ($sorterParam !== '') {
+                $sorter = json_decode(rawurldecode($sorterParam));
+                $report->setSortOrder($sorter->field, $sorter->direction);
             }
 
             $responseData = [
